@@ -1,18 +1,15 @@
 # coding=utf-8
-import time
-
-from tkinter import *
-from bs4 import BeautifulSoup
-import tkinter.font as tkfont
-import urllib.request
-from urllib.parse import quote
-
 import logging
 import logging.handlers
+import time
+import tkinter.font as tkfont
+import urllib.request
+from tkinter import *
+from urllib.parse import quote
+
+from bs4 import BeautifulSoup
 from sqlalchemy import Column, Integer, String, Text
-from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 
 Base = declarative_base()
 
@@ -52,7 +49,8 @@ class Question:
         self.logger.addHandler(console_handler)
         self.logger.addHandler(file_handler)
 
-    def get_answer_form_network(self, content):
+    @staticmethod
+    def get_answer_form_network(content):
         url = 'http://xuexi.xuanxiu365.com/index.php?time=%s&q=%s' % (int(time.time()), quote(content))
         r = urllib.request.urlopen(url, timeout=10)
         module = Module()
@@ -75,7 +73,7 @@ class Question:
         import threading as thrd
         import time
 
-        def watchClip(top):
+        def watch_clip(top):
             lastid = None
             while True:
                 time.sleep(0.01)
@@ -94,6 +92,7 @@ class Question:
         label1 = Label(root, justify=LEFT, bg='red', textvariable=content)
         label1.pack(fill=X)
 
+        # noinspection PyUnusedLocal
         def callback(event):
             try:
                 string = root.clipboard_get()
@@ -116,7 +115,7 @@ class Question:
 
         root.bind('<Button-2>', callback)
 
-        t = thrd.Thread(target=watchClip, args=(root,), daemon=True)
+        t = thrd.Thread(target=watch_clip, args=(root,), daemon=True)
         t.start()
         root.bind("<<clipUpdateEvent>>", callback)
 
