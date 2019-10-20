@@ -52,7 +52,6 @@ class Question:
         self.logger.addHandler(console_handler)
         self.logger.addHandler(file_handler)
 
-    # 非人类中心
     @staticmethod
     def get_answer_form_network(content):
         url = 'http://xuexi.xuanxiu365.com/index.php?time=%s&q=%s' % (int(time.time()), quote(content))
