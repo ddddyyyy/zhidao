@@ -7,6 +7,9 @@ import urllib.request
 from tkinter import *
 from urllib.parse import quote
 
+import win32clipboard
+import threading as thrd
+
 from bs4 import BeautifulSoup
 from sqlalchemy import Column, Integer, String, Text
 from sqlalchemy.ext.declarative import declarative_base
@@ -49,14 +52,15 @@ class Question:
         self.logger.addHandler(console_handler)
         self.logger.addHandler(file_handler)
 
+    # 非人类中心
     @staticmethod
     def get_answer_form_network(content):
         url = 'http://xuexi.xuanxiu365.com/index.php?time=%s&q=%s' % (int(time.time()), quote(content))
         r = urllib.request.urlopen(url, timeout=10)
         module = Module()
         if r is not None:
-            html = BeautifulSoup(r.read().decode('utf-8'), 'lxml')
-            answer_tag = html.find(text='答案：')
+            html = BeautifulSoup(r.read().decode('utf-8').replace('', ' '), 'lxml')
+            answer_tag = html.find(text='正确答案是：')
             if answer_tag is not None:
                 question_tag = html.find(text='题目：')
                 module.answer = answer_tag.parent.next_sibling.string
@@ -68,11 +72,6 @@ class Question:
         return None
 
     def init_gui(self):
-
-        import win32clipboard
-        import threading as thrd
-        import time
-
         def watch_clip(top):
             lastid = None
             while True:
@@ -86,11 +85,16 @@ class Question:
         root = Tk()
 
         ft = tkfont.Font(family='Fixdsys', size=16, weight=tkfont.BOLD)
+
         content = StringVar()
         text = StringVar()
 
         label1 = Label(root, justify=LEFT, bg='red', textvariable=content)
         label1.pack(fill=X)
+
+        # from tkinter import Text as TKText
+        # T = TKText(root, font=ft)
+        # T.pack()
 
         # noinspection PyUnusedLocal
         def callback(event):
