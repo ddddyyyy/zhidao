@@ -1,7 +1,7 @@
 # zhidao
 知到(智慧树)答题助手(桌面版)
 
-1. 实现功能：自动查询复制到的文本
+1. 实现功能：自动查询复制到的文本的题目答案
 2. 使用方法：
   - windows去[release](https://github.com/ddddyyyy/zhidao/releases/latest)下载最新版可执行文件运行即可
   - mac/linux可通过使用python3.7.x版本运行本项目的源文件
