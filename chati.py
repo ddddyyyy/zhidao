@@ -71,13 +71,13 @@ class Question:
         return None
 
     def init_gui(self):
+
         root = Tk()
 
         # noinspection PyUnusedLocal
         # 获取答案
         def callback(event):
             try:
-                print('hit')
                 string = root.clipboard_get()
                 if string is not None and string != '':
                     try:
@@ -99,10 +99,20 @@ class Question:
         self_platform = platform.system()
         if self_platform == "Darwin":
             # 不可用
-            subprocess.call(
-                ["/usr/bin/osascript", "-e", 'tell app "Finder" to set frontmost of process "Python" to true'])
-            root.bind('<Command-c>', callback)
-            root.bind('<Command-C>', callback)
+            # subprocess.call(
+            #     ["/usr/bin/osascript", "-e", 'tell app "Finder" to set frontmost of process "Python" to true'])
+            # root.bind('<Command-c>', callback)
+            # root.bind('<Command-C>', callback)
+            def watch_clip(top):
+                import time
+                last_str = None
+                while True:
+                    time.sleep(0.01)
+                    now_str = root.clipboard_get()
+                    if last_str is None or (last_str != now_str):
+                        if last_str is not None:
+                            top.event_generate("<<clipUpdateEvent>>", when="tail")
+                        last_str = now_str
         else:
             def watch_clip(top):
                 import win32clipboard
@@ -116,8 +126,8 @@ class Question:
                             top.event_generate("<<clipUpdateEvent>>", when="tail")
                         lastid = nowid
 
-            t = threading.Thread(target=watch_clip, args=(root,), daemon=True)
-            t.start()
+        t = threading.Thread(target=watch_clip, args=(root,), daemon=True)
+        t.start()
 
         ft = tkfont.Font(family='Fixdsys', size=16, weight=tkfont.BOLD)
 
@@ -154,4 +164,3 @@ class Question:
 if __name__ == '__main__':
     q = Question()
     q.init_gui()
-
