@@ -1,14 +1,14 @@
 # coding=utf-8
 import logging
 import logging.handlers
+import platform
+import subprocess
+import threading
 import time
 import tkinter.font as tkfont
 import urllib.request
 from tkinter import *
 from urllib.parse import quote
-
-import win32clipboard
-import threading as thrd
 
 from bs4 import BeautifulSoup
 from sqlalchemy import Column, Integer, String, Text
@@ -71,33 +71,13 @@ class Question:
         return None
 
     def init_gui(self):
-        def watch_clip(top):
-            lastid = None
-            while True:
-                time.sleep(0.01)
-                nowid = win32clipboard.GetClipboardSequenceNumber()
-                if lastid is None or (lastid != nowid):
-                    if lastid is not None:
-                        top.event_generate("<<clipUpdateEvent>>", when="tail")
-                    lastid = nowid
-
         root = Tk()
 
-        ft = tkfont.Font(family='Fixdsys', size=16, weight=tkfont.BOLD)
-
-        content = StringVar()
-        text = StringVar()
-
-        label1 = Label(root, justify=LEFT, bg='red', textvariable=content)
-        label1.pack(fill=X)
-
-        # from tkinter import Text as TKText
-        # T = TKText(root, font=ft)
-        # T.pack()
-
         # noinspection PyUnusedLocal
+        # 获取答案
         def callback(event):
             try:
+                print('hit')
                 string = root.clipboard_get()
                 if string is not None and string != '':
                     try:
@@ -116,10 +96,43 @@ class Question:
             except TclError:
                 pass
 
+        self_platform = platform.system()
+        if self_platform == "Darwin":
+            # 不可用
+            subprocess.call(
+                ["/usr/bin/osascript", "-e", 'tell app "Finder" to set frontmost of process "Python" to true'])
+            root.bind('<Command-c>', callback)
+            root.bind('<Command-C>', callback)
+        else:
+            def watch_clip(top):
+                import win32clipboard
+                import time
+                lastid = None
+                while True:
+                    time.sleep(0.01)
+                    nowid = win32clipboard.GetClipboardSequenceNumber()
+                    if lastid is None or (lastid != nowid):
+                        if lastid is not None:
+                            top.event_generate("<<clipUpdateEvent>>", when="tail")
+                        lastid = nowid
+
+            t = threading.Thread(target=watch_clip, args=(root,), daemon=True)
+            t.start()
+
+        ft = tkfont.Font(family='Fixdsys', size=16, weight=tkfont.BOLD)
+
+        content = StringVar()
+        text = StringVar()
+
+        label1 = Label(root, justify=LEFT, bg='red', textvariable=content)
+        label1.pack(fill=X)
+
+        # from tkinter import Text as TKText
+        # T = TKText(root, font=ft)
+        # T.pack()
+
         root.bind('<Button-2>', callback)
 
-        t = thrd.Thread(target=watch_clip, args=(root,), daemon=True)
-        t.start()
         root.bind("<<clipUpdateEvent>>", callback)
 
         label2 = Label(root, justify=CENTER, wraplength=300, textvariable=text, fg='red', font=ft)
@@ -141,3 +154,4 @@ class Question:
 if __name__ == '__main__':
     q = Question()
     q.init_gui()
+
